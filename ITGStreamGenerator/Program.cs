@@ -155,11 +155,16 @@ namespace ITGStreamGenerator
             if (first == "0010" && second == "0100" && third == "1000" && fourth == "0100")
                 return true;
 
+            //Open boxes? not sure what to call these
+            if (first == "0100" && second == "1000" && third == "0001" && fourth == "0010")
+                return true;
+            if (first == "0010" && second == "0001" && third == "1000" && fourth == "0100")
+                return true;
             return false;
         }
         static void Main(string[] args)
         {
-            string path = @"E:\Programming\ITG Autogen\Happy Time\Happy Time.sm";
+            string path = @"E:\Programming\ITG Autogen\Give it All\Rise Against - Give It All.sm";
             List<string> lines = new List<string>();
             List<int> markers = new List<int>();
             Random r = new Random();
@@ -172,7 +177,7 @@ namespace ITGStreamGenerator
                 {
                     lines.Add(s);
                     linecount++;
-                    if (s == "1000")
+                    if (s == "1000" || s == "0100" || s == "0010" || s == "0001")
                     {
                         changecount++;
                         markers.Add(1);
