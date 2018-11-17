@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;//ITG Auto-generator for streams
+using System.Threading.Tasks;
+//ITG Auto-generator for streams
 //Left off trying to figure out how to stop the generation of long uncomfortable patterns like 8-notes being repeated over and over, and long anchors 
 //For the bad pattern checker, the "fourth" note is the newest note in the pattern and the "first" is the oldest
-//tests
 
 using System;
 using System.Collections.Generic;
@@ -44,11 +44,12 @@ namespace ITGStreamGenerator
         }
 
 
-        static bool isBad(List<string> currentPatt, string fourth, string foot)
+        // static bool isBad(List<string> currentPatt, string fourth, string foot)
+        static bool isBad(string first,string second,string third, string fourth, string foot)
         {
-            string first = currentPatt[0];
-            string second = currentPatt[1];
-            string third = currentPatt[2];
+            //string first = currentPatt[0];
+            //string second = currentPatt[1];
+            //string third = currentPatt[2];
             /*Template
             if (first == "000" && second == "000" && third == "000" && fourth == "000")
             return true;
@@ -129,6 +130,31 @@ namespace ITGStreamGenerator
                 return true;
             else if (first == "0001" && second == "0100" && third == "0001" && fourth == "0100")
                 return true;
+
+            //Candles
+            /*
+            if (foot == "left")
+            {
+                if (second == "0100" && third == "0001" && fourth == "0010")
+                    return true;
+                if (second == "0010" && third == "0001" && fourth == "0100")
+                    return true;
+            }
+            if (foot == "right")
+            {
+                if (second == "0010" && third == "1000" && fourth == "0100")
+                    return true;
+                if (second == "0100" && third == "1000" && fourth == "0010")
+                    return true;
+            }
+            */
+
+            //Staircases
+            if (first == "0100" && second == "0010" && third == "0001" && fourth == "0010")
+                return true;
+            if (first == "0010" && second == "0100" && third == "1000" && fourth == "0100")
+                return true;
+
             return false;
         }
         static void Main(string[] args)
@@ -179,6 +205,8 @@ namespace ITGStreamGenerator
             currentPattern.Add(fourthNote);
             string currentFoot = "";
             bool badPattern = false;
+            bool consecutiveNote = false;
+            bool inbetween = false;
             for (int i = 0; i < linecount; i++)
             {
                 if (markers[i] == 1)
@@ -199,17 +227,30 @@ namespace ITGStreamGenerator
                             else
                                 currentFoot = "right";
                         }
-                        // badPattern = isBad(currentPattern[1], currentPattern[2], currentPattern[3], nextPattern, currentFoot); 
-                        badPattern = isBad(currentPattern, nextPattern, currentFoot);
+                         badPattern = isBad(currentPattern[1], currentPattern[2], currentPattern[3], nextPattern, currentFoot);
+                        if (consecutiveNote == true && nextPattern == currentPattern[2] && inbetween == false)
+                        {
+                            badPattern = true;                            
+                        }
+                       // badPattern = isBad(currentPattern, nextPattern, currentFoot);
                         if (!badPattern)
                         {
-
+                            if (consecutiveNote == true && inbetween == false)
+                                consecutiveNote = false;
+                            if (consecutiveNote == true && inbetween == true)
+                                inbetween = false;
+                            if (nextPattern == currentPattern[2])
+                            {
+                                consecutiveNote = true;
+                                inbetween = true;
+                            }
                             lines[i] = nextPattern;
                             lastPattern = lines[i];
                             totalNoteCount++;
                             currentPattern.Add(nextPattern);
                             currentPattern.RemoveAt(0);
-                            solved = true;
+                            solved = true;                                                       
+                            
                             if (currentFoot == "left")
                                 currentFoot = "right";
                             else
@@ -241,13 +282,33 @@ namespace ITGStreamGenerator
     }
 }
 
+/*Maybe eliminating candles will do the trick??*/
+// Edit: Actually candles are fine, eliminating anchors did the trick
 
-namespace ITGStreamGenerator
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-        }
-    }
-}
+/*New Parser ideas
+ * not limited to 4 notes
+	- takes a list of n size strings formated
+	  "0000" with a 1 replacing one '0'.
+	- still takes into account current foot
+	- looks at each note and checks current foot
+	  for every bad pattern
+	- for every pattern, loop through the list 
+	  and check i i+1 i+2 i+3 etc to get n 
+	  amount of notes in a sequence 
+	- before adding it to a list it will check
+	  an entire chunk of arrows from the first
+	  itteration of "1000" until it hits a 
+	  "0000"
+	- it will need to take into account commas
+	  and skip over them
+	- only after patterning each chunk will it
+	  be added to the final list
+
+    - Alternatively
+    - Instead of complete note-by-note generation
+      followed by fixing whatever it comes up with
+      I could just tell it ahead of time what 
+      patterns are ok, and then it just randomly
+      copy & pastes good patterns together
+      - would also probably be faster
+*/
